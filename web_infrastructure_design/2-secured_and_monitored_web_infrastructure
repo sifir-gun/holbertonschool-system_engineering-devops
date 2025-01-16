@@ -1,0 +1,67 @@
+          ┌────────────────────────────────────────────────────────────────────┐
+          │                        User’s Browser                              │
+          │   (Requests https://www.foobar.com over HTTPS)                     │
+          └────────────────────────────────────────────────────────────────────┘
+                                   |               ^
+                                   |               |
+                                   v               |
+┌────────────────────────────────────────────────────────────────────────────────┐
+│    Firewall #1 (front of LB)   +   HAProxy Load Balancer (SSL termination)     │
+│                     [ Server #1, SSL Cert for foobar.com ]                     │
+└────────────────────────────────────────────────────────────────────────────────┘
+                                   |               ^
+                                   |               |
+                                   v               |
+     ┌────────────────────────────────────────────────────────────────────┐
+     │   Firewall #2 (front of Web/App)  +  Nginx + Application Server    │
+     │            [ Server #2, your code base, Monitoring client ]        │
+     └────────────────────────────────────────────────────────────────────┘
+                                   |               ^
+                                   |               |
+                                   v               |
+     ┌────────────────────────────────────────────────────────────────────┐
+     │    Firewall #3 (front of DB)    +    MySQL Database (Primary)      │
+     │          [ Server #3, Monitoring client ]                          │
+     └────────────────────────────────────────────────────────────────────┘
+
+Added Components
+	1.	3 Firewalls
+		•	Each server (Load Balancer, Web/App, Database) has its own firewall configuration.
+		•	Reason: Firewalls help restrict incoming and outgoing traffic to only the necessary ports/protocols (e.g., 443 for HTTPS, 3306 for MySQL, etc.), improving overall security.
+	2.	SSL Certificate
+		•	An SSL/TLS certificate is installed on the Load Balancer (HAProxy) for www.foobar.com.
+		•	Reason: Encrypts traffic between the user’s browser and the infrastructure to protect data in transit.
+	3.	3 Monitoring Clients
+		•	A monitoring agent (e.g., Sumologic collector, Prometheus node exporter, Datadog agent, etc.) is installed on each server.
+		•	Reason: Collects metrics and logs (CPU usage, memory, disk usage, inbound connections, etc.) and sends them to a central monitoring service for analysis and alerting.
+
+Explanation of Key Elements
+	1.	Firewalls
+		•	Deployed on each server to control which ports are open and who can access them.
+		•	Example policies:
+		•	Load Balancer’s firewall might only allow 443 (HTTPS) and 22 (SSH) from the public internet.
+		•	Web/App server firewall only allows inbound connections from the Load Balancer on port 80/443 (if SSL is being passed through or re-encrypted), plus 22 for SSH (restricted to internal IPs).
+		•	Database firewall only allows inbound 3306 (MySQL) from the Web/App server’s IP, plus 22 for SSH (internal only).
+	2.	HTTPS Traffic
+		•	Ensures data transmitted between the user and your load balancer is encrypted (login credentials, private data, etc.).
+		•	Builds trust with users, improves SEO ranking, and often is required for compliance with certain standards.
+	3.	Monitoring
+		•	Purpose: Track the health and performance of each server in real time.
+		•	The monitoring agent on each server collects system metrics (CPU, RAM, Disk, network usage) plus relevant logs (Nginx logs, MySQL logs, etc.).
+		•	These metrics are sent to a centralized monitoring system (Sumologic, Prometheus, Datadog, etc.) where you can set alerts (e.g., high CPU usage, high response times, out-of-memory errors, etc.).
+		4.	Monitoring the Web Server’s QPS (Queries Per Second / Requests Per Second)
+		•	You configure your monitoring tool to scrape or parse the Nginx access logs (or use a built-in Nginx metric exporter).
+		•	The collector aggregates how many HTTP requests are handled per second.
+		•	You can set thresholds (e.g., alert if QPS spikes above X or if error rate is above Y).
+
+Potential Issues in This Infrastructure
+	1.	SSL Termination at the Load Balancer
+		•	If you terminate SSL on the Load Balancer, the traffic from the LB to the Web/App server is often unencrypted (HTTP).
+		•	This can be a security concern in environments where you prefer end-to-end encryption.
+		•	A more secure approach could be SSL re-encryption (LB to web server over HTTPS), but it adds complexity.
+	2.	Only One MySQL Server Capable of Accepting Writes
+		•	If the database server fails, writes cannot be performed and the site may break for any operation requiring data modification.
+		•	This is a single point of failure. In a production environment, you’d typically have a Primary-Replica or Primary-Primary cluster for high availability.
+	3.	Servers with All Components
+		•	If each server had the same stack (web, app, DB) without separation of concerns, it could complicate maintenance, updates, and scaling.
+		•	In some cases, mixing roles on a single machine can lead to resource contention (e.g., DB queries affecting web server performance).

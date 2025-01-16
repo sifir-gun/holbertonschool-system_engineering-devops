@@ -1,0 +1,60 @@
+Reminder: Web Server vs. Application Server
+	•	A web server (e.g., Nginx, Apache HTTP Server) primarily handles static content (HTML, CSS, images, etc.) and responds to HTTP(S) requests from client browsers or mobile apps.
+	•	An application server (e.g., a Python WSGI server, Node.js, or Java app server) hosts the business logic that generates dynamic content. It can communicate with other systems (including the database) to produce the data the web server eventually sends back to the user.
+
+In many modern stacks, these roles can overlap because some web servers (like Nginx) also have modules or configurations that handle dynamic logic, while some application servers (like Node.js) can also serve static files. However, splitting them cleanly is a common pattern for performance, scaling, and maintainability.
+
+Infrastructure Diagram
+              ┌────────────────────────────────────────────┐
+              │       User's Browser (HTTPS requests)      │
+              └────────────────────────────────────────────┘
+                                |
+                                v
+      ┌─────────────────────────────────────────────────────────────┐
+      │    HAProxy LB #1 <===> HAProxy LB #2 (Cluster Mode)         │
+      │   [ Servers #1 and #2, distributing inbound traffic ]       │
+      └─────────────────────────────────────────────────────────────┘
+                                |
+                                v
+      ┌─────────────────────────────────────────────────────────────┐
+      │    Web Server (Nginx) - Server #3                           │
+      │ (Serves static assets, proxies dynamic requests to app)     │
+      └─────────────────────────────────────────────────────────────┘
+                                |
+                                v
+      ┌─────────────────────────────────────────────────────────────┐
+      │    Application Server - Server #4                           │
+      │ (Runs the business logic / your code base)                  │
+      └─────────────────────────────────────────────────────────────┘
+                                |
+                                v
+      ┌─────────────────────────────────────────────────────────────┐
+      │    Database Server (MySQL) - Server #5                      │
+      │ (Handles writes/reads of persisted data)                    │
+      └─────────────────────────────────────────────────────────────┘
+
+Key Points:
+	1.	We now have a second load balancer (LB #2) configured in a cluster with the original LB (LB #1).
+		•	This removes the single point of failure at the load-balancing layer. If one load balancer goes down, the other continues distributing traffic.
+	2.	Components are split across distinct servers:
+		•	Web Server (Nginx) focuses on serving static content and forwarding dynamic requests to the application server.
+		•	Application Server (your business logic) handles the dynamic side of the site (e.g., generating pages, processing forms, calling APIs).
+		•	Database Server (MySQL) stores and manages persistent data (user records, transactions, configurations, etc.).
+	3.	Why we add these specific elements:
+		•	Second Load Balancer:
+			•	Reason: High availability (HA). If LB #1 fails or is overloaded, LB #2 can continue directing traffic.
+		•	Separate Web, App, and DB Servers:
+			•	Reason: Better performance, clearer resource isolation, and easier scaling. Each server can be tuned to its specific workload.
+			•	For example, the DB server might require high I/O performance, while the web server might need fast static file serving.
+
+Benefits of This Design
+	1.	Scalability
+		•	You can add more web servers or app servers behind the load balancer cluster to handle increasing traffic.
+		•	Splitting roles means you can tune or upgrade servers independently.
+	2.	High Availability
+		•	Having two load balancers in a cluster mode avoids downtime if one LB fails.
+		•	You can similarly add database replicas for further redundancy.
+	3.	Security and Maintainability
+		•	Each layer (LB, web server, app server, DB) can have its own firewall rules and update schedule.
+		•	Isolating the DB means it’s not publicly exposed.
+

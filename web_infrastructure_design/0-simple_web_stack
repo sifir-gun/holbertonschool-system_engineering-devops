@@ -1,0 +1,58 @@
+   ┌─────────────────────────────────────────────────────────────────┐
+   │                          User's Browser                         │
+   │       (Requests www.foobar.com over HTTP/HTTPS)                 │
+   └─────────────────────────────────────────────────────────────────┘
+                        |                   ^
+                        |                   |
+                        v                   |
+   ┌─────────────────────────────────────────────────────────────────┐
+   │                        Nginx (Web Server)                       │
+   └─────────────────────────────────────────────────────────────────┘
+                        |                   ^
+                        |                   |
+                        v                   |
+   ┌─────────────────────────────────────────────────────────────────┐
+   │                  Application Server                             │
+   └─────────────────────────────────────────────────────────────────┘
+                        |                   ^
+                        |                   |
+                        v                   |
+   ┌─────────────────────────────────────────────────────────────────┐
+   │                        MySQL Database                           │
+   └─────────────────────────────────────────────────────────────────┘
+
+In this setup:
+	•	Domain name: foobar.com with a www subdomain record (A record) pointing to the single server’s IP, 8.8.8.8 (example).
+
+
+Explanation of Each Component
+	1.	Server
+		•	A server is a computer (physical or virtual machine) that runs software to serve requests from clients (in this case, users’ web browsers). It listens for incoming connections and responds accordingly.
+	2.	Role of the Domain Name (foobar.com / www.foobar.com)
+		•	A domain name is a human-readable address used to access a website or service. Instead of typing an IP address, users type www.foobar.com.
+		•	The domain name is managed by DNS so that when a user enters www.foobar.com, DNS resolves it to the server’s IP address (8.8.8.8 in this example).
+	3.	Type of DNS Record (www.foobar.com)
+		•	The www in www.foobar.com is typically an A record in DNS (though it can also be a CNAME in some setups).
+		•	Here, it points directly to the IP address of the server, which is 8.8.8.8.
+	4.	Role of the Web Server (Nginx)
+		•	Nginx (web server) accepts incoming requests (HTTP/HTTPS) from the internet.
+		•	It processes those requests and forwards them to the application server, or serves static content directly.
+	5.	Role of the Application Server
+		•	The application server runs your application’s code (e.g., Python, Node.js, PHP, Ruby, etc.).
+		•	It handles the logic, processes dynamic content, communicates with the database, and returns responses back to Nginx.
+	6.	Role of the Database (MySQL)
+		•	The MySQL database stores and organizes the site’s data (e.g., user records, blog posts, transactions).
+		•	The application server queries or updates the database as needed to fulfill user requests.
+	7.	Communication Between Server and User
+		•	Communication happens via HTTP/HTTPS protocols over the internet.
+		•	The user’s browser sends HTTP/HTTPS requests to www.foobar.com, which the DNS resolves to IP 8.8.8.8.
+		•	The single server (running Nginx + application server + MySQL) sends back the appropriate responses.
+
+
+	Issues / Limitations of This Infrastructure
+	1.	Single Point of Failure (SPOF)
+		•	Because there is only one server, if it goes down or has issues, the entire website is unavailable.
+	2.	Downtime During Maintenance
+		•	Any time you need to deploy new code or restart the server, the site experiences downtime. There is no redundancy.
+	3.	Limited Scalability
+		•	With only one server, once traffic becomes too large, you cannot easily scale to handle higher load. You would need additional servers and load balancing in a more advanced setup.

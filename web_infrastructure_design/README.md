@@ -86,6 +86,14 @@ holbertonschool-system_engineering-devops/
 └── README.md
 ```
 
+## Diagram
+
+* Task 0 : https://github.com/sifir-gun/holbertonschool-system_engineering-devops/blob/883591f8b35d86ce6e72baa4de47d30d1c43fee1/web_infrastructure_design/0-simple_web_stack
+* Task 1 :
+ ![Task 1 Diagram](https://github.com/sifir-gun/holbertonschool-system_engineering-devops/blob/main/web_infrastructure_design/diagram_task1.png)
+* Task 2 : https://github.com/sifir-gun/holbertonschool-system_engineering-devops/blob/883591f8b35d86ce6e72baa4de47d30d1c43fee1/web_infrastructure_design/2-secured_and_monitored_web_infrastructure
+* Task 3 : https://github.com/sifir-gun/holbertonschool-system_engineering-devops/blob/883591f8b35d86ce6e72baa4de47d30d1c43fee1/web_infrastructure_design/3-scale_up
+
 ## Important Notes
 
 * All documentation must be in English

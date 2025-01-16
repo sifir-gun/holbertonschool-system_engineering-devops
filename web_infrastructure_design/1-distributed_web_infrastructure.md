@@ -1,28 +1,4 @@
-          ┌─────────────────────────────────────────────────────┐
-          │                   User’s Browser                    │
-          │    (Requests www.foobar.com via HTTP/HTTPS)         │
-          └─────────────────────────────────────────────────────┘
-                             |             ^
-                             |             |
-                             v             |
- ┌───────────────────────────────────────────────────────────────┐
- │             HAProxy (Load Balancer) - Server #1               │
- └───────────────────────────────────────────────────────────────┘
-                             |             ^
-              Distributes traffic using  |
-                 a chosen algorithm      |
-                             v             |
- ┌───────────────────────────────────────────────────────────────┐
- │   Nginx (Web Server) + Application Server - Server #2         │
- │       (Hosts your application files / code base)              │
- └───────────────────────────────────────────────────────────────┘
-                             |             ^
-                             |   SQL       |
-                             v   queries   |
- ┌───────────────────────────────────────────────────────────────┐
- │                    MySQL Database - Server #3                 │
- │               (Potentially Primary in a cluster)              │
- └───────────────────────────────────────────────────────────────┘
+![Task 1 Diagram](https://github.com/sifir-gun/holbertonschool-system_engineering-devops/blob/main/web_infrastructure_design/diagram_task1.png)
 
 	1.	Server #1:
 		•	HAProxy (Load Balancer)
